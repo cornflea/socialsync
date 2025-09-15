@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { LinkedInModule } from './linkedin/linkedin.module';
+import { InstagramModule } from './instagram/instagram.module';
 import { createTypeOrmOptions } from './config/database.config';
 
 @Module({
@@ -20,6 +21,7 @@ import { createTypeOrmOptions } from './config/database.config';
     }),
     AuthModule,
     LinkedInModule,
+    InstagramModule,
   ],
   controllers: [AppController],
   providers: [AppService],
