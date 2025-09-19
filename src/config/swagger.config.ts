@@ -32,7 +32,10 @@ export function setupSwagger(app: INestApplication): void {
       'support@cornflea.com',
     )
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-    .addServer('http://localhost:3000', 'Development server')
+    .addServer(
+      `http://localhost:${process.env.PORT ?? 3000}`,
+      'Development server',
+    )
     .addServer('https://api.cornflea.com', 'Production server')
     .addTag('auth', 'Authentication and user management')
     .addTag('posts', 'Post creation and management')

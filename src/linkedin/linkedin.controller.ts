@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Post,
   Req,
   Res,
@@ -141,34 +140,36 @@ Use the \`/auth/linkedin/link\` endpoint to associate the account with an authen
   @UseGuards(AuthGuard('linkedin'))
   linkedInAuthCallback(@Req() req: Request, @Res() res: Response) {
     try {
-      const linkedInUser = req.user as any;
-
-      // For now, we'll need to get the user ID from the session or token
-      // In a real implementation, you'd extract this from the authenticated user
-      // This is a simplified example - you'd need to handle user authentication flow
-
-      const expiresAt = new Date();
-      expiresAt.setSeconds(expiresAt.getSeconds() + 5184000); // 60 days default
-
-      // This would need to be adapted based on your auth flow
-      // For demo purposes, we'll return the LinkedIn user data
-
-      return res.status(HttpStatus.OK).json({
-        success: true,
-        message: 'LinkedIn authentication successful',
-        linkedInData: {
-          linkedInId: linkedInUser.linkedInId,
-          displayName: linkedInUser.displayName,
-          email: linkedInUser.email,
-          // Note: We don't return tokens for security
-        },
-      });
+      const linkedInUser = req.user as {
+        linkedInId: string;
+        displayName: string;
+        email: string;
+      };
+      
+      // Get frontend URL from environment or use default
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+      const redirectUrl = new URL('/app/social/callback', frontendUrl);
+      
+      // Add success parameters
+      redirectUrl.searchParams.set('status', 'success');
+      redirectUrl.searchParams.set('provider', 'linkedin');
+      redirectUrl.searchParams.set('linkedInId', linkedInUser.linkedInId);
+      redirectUrl.searchParams.set('displayName', linkedInUser.displayName);
+      redirectUrl.searchParams.set('email', linkedInUser.email);
+      
+      return res.redirect(redirectUrl.toString());
     } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        success: false,
-        message: 'LinkedIn authentication failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      // Redirect to frontend with error
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+      const errorUrl = new URL('/app/social/callback', frontendUrl);
+      errorUrl.searchParams.set('status', 'error');
+      errorUrl.searchParams.set('provider', 'linkedin');
+      errorUrl.searchParams.set(
+        'error',
+        error instanceof Error ? error.message : 'Unknown error',
+      );
+      
+      return res.redirect(errorUrl.toString());
     }
   }
 
